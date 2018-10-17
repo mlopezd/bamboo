@@ -121,7 +121,7 @@ logging host {{ SYSLOG_SERVER }}
 
 ! Management SVI
 
-interface vlan {{ vlan }}
+interface vlan {{ vlanid }}
 ip address {{ ipaddress }} {{ netmask }}
 no shut
 exit

@@ -1,4 +1,4 @@
-! Generation time: 17:05:53 10/17/18
+! Generation time: 18:08:53 10/17/18
 !
 ! Service
 
@@ -135,7 +135,7 @@ logging host 192.168.100.100
 
 ! Management SVI
 
-interface vlan 
+interface vlan 100
 ip address 192.168.0.1 255.255.255.0
 no shut
 exit
