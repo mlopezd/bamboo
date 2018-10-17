@@ -1,0 +1,137 @@
+! Service
+
+service timestamps debug datetime localtime msec
+service timestamps log datetime localtime msec
+service password-encryption
+no service dhcp 
+
+! Hostname
+
+hostname {{ switch }}
+
+! NTP
+
+ntp server {{ NTP_SERVER_1 }} prefer
+ntp server {{ NTP_SERVER_2 }}
+clock timezone EST 10 0
+clock summer-time Sydney recurring 1 Sun Oct 2:00 1 Sun Apr 3:00
+
+! Login
+
+ip domain name {{ DOMAIN_NAME }}
+no ip domain-lookup
+username {{ USERNAME }} privilege 15 algorithm-type scrypt secret {{ SECRET }}
+enable secret {{ ENABLE_SECRET }}
+crypto key generate rsa modulus 2048
+ip ssh version 2
+
+line con 0
+ exec-timeout 15 0
+ login authentication CONSOLE
+line vty 0 4
+ exec-timeout 15 0
+ transport input all
+line vty 5 15
+ exec-timeout 15 0
+ transport input all
+exit
+
+no ip http secure-server
+no ip http server
+
+! SNMP
+
+snmp-server community {{ SNMP_COMMUNITY }} ro
+snmp-server host {{ SNMP_SERVER }} version 2c {{ SNMP_COMMUNITY }}
+snmp-server enable traps snmp linkdown linkup coldstart warmstart
+snmp-server enable traps envmon
+snmp ifmib ifindex persist
+snmp-server location {{ location }}
+
+! VLAN database
+
+vtp mode transparent
+{% for key, value in network_vlans.items() %}
+vlan {{ value }}
+name {{ key }}
+{% endfor %}
+exit
+
+! Interface configuration
+
+interface FastEthernet 1/1
+ description {{ interface_1_description }}
+ switchport mode access
+ switchport access vlan {{ interface_1_vlan }}
+ {% if interface_1_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/2
+ description {{ interface_2_description }}
+ switchport mode access
+ switchport access vlan {{ interface_2_vlan }}
+ {% if interface_2_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/3
+ description {{ interface_3_description }}
+ switchport mode access
+ switchport access vlan {{ interface_3_vlan }}
+ {% if interface_3_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/4
+ description {{ interface_4_description }}
+ switchport mode access
+ switchport access vlan {{ interface_4_vlan }}
+ {% if interface_4_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/5
+ description {{ interface_5_description }}
+ switchport mode access
+ switchport access vlan {{ interface_5_vlan }}
+ {% if interface_5_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/6
+ description {{ interface_6_description }}
+ switchport mode access
+ switchport access vlan {{ interface_6_vlan }}
+ {% if interface_6_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/7
+ description {{ interface_7_description }}
+ switchport mode access
+ switchport access vlan {{ interface_7_vlan }}
+ {% if interface_7_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface FastEthernet 1/8
+ description {{ interface_8_description }}
+ switchport mode access
+ switchport access vlan {{ interface_8_vlan }}
+ {% if interface_8_description == "UNUSED - Unused" %}shutdown{% endif %}
+
+interface GigabitEthernet1/1
+ switchport mode trunk
+
+interface GigabitEthernet1/2
+ switchport mode trunk
+
+! Syslog
+
+logging buffer {{ LOGGING_BUFFER_SIZE }}
+logging buffer {{ LOGGING_LEVEL }}
+logging host {{ SYSLOG_SERVER }}
+
+! Management SVI
+
+interface vlan {{ vlan }}
+ip address {{ ipaddress }} {{ netmask }}
+no shut
+exit
+
+! Routing
+
+ip default-gateway {{ gateway }}
+
+! Archive
+
+archive
+path tftp://{{ TFTP_SERVER }}/$h-$t
+time-period 1440

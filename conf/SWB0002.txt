@@ -1,0 +1,199 @@
+! Generation time: 17:05:53 10/17/18
+!
+! Service
+
+service timestamps debug datetime localtime msec
+service timestamps log datetime localtime msec
+service password-encryption
+no service dhcp 
+
+! Hostname
+
+hostname SWB0002
+
+! NTP
+
+ntp server 192.168.100.1 prefer
+ntp server 192.168.100.2
+clock timezone EST 10 0
+clock summer-time Sydney recurring 1 Sun Oct 2:00 1 Sun Apr 3:00
+
+! Login
+
+ip domain name northcampus.uni.edu
+no ip domain-lookup
+username admin privilege 15 algorithm-type scrypt secret cisco
+enable secret cisco
+crypto key generate rsa modulus 2048
+ip ssh version 2
+
+line con 0
+ exec-timeout 15 0
+ login authentication CONSOLE
+line vty 0 4
+ exec-timeout 15 0
+ transport input all
+line vty 5 15
+ exec-timeout 15 0
+ transport input all
+exit
+
+no ip http secure-server
+no ip http server
+
+! SNMP
+
+snmp-server community northcampus ro
+snmp-server host 192.168.100.1 version 2c northcampus
+snmp-server enable traps snmp linkdown linkup coldstart warmstart
+snmp-server enable traps envmon
+snmp ifmib ifindex persist
+snmp-server location Building B – Second floor
+
+! VLAN database
+
+vtp mode transparent
+
+vlan 110
+name SW-MGMT-B
+
+vlan 111
+name WORKSTATIONS-B
+
+vlan 112
+name PHONES-B
+
+vlan 113
+name PRINTERS-B
+
+vlan 114
+name WIFI-B
+
+exit
+
+! Interface configuration
+
+interface FastEthernet 1/1
+ description PCB0002 - Office B201 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/2
+ description PHB0002 - Office B201 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/3
+ description PCB0003 - Office B202 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/4
+ description PHB0003 - Office B202 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/5
+ description PCB0004 - Office B203 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/6
+ description PHB0004 - Office B203 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/7
+ description PCB0005 - Office B204 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/8
+ description PHB0005 - Office B204 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/9
+ description PCB0006 - Office B205 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/10
+ description PHB0006 - Office B205 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/11
+ description PCB0007 - Office B206 Workstation
+ switchport mode access
+ switchport access vlan 111
+ 
+
+interface FastEthernet 1/12
+ description PHB0007 - Office B206 phone
+ switchport mode access
+ switchport access vlan 112
+ 
+
+interface FastEthernet 1/13
+ description UNUSED - Unused
+ switchport mode access
+ switchport access vlan 999
+ shutdown
+
+interface FastEthernet 1/14
+ description UNUSED - Unused
+ switchport mode access
+ switchport access vlan 999
+ shutdown
+
+interface FastEthernet 1/15
+ description PRB0002 - Second floor B printer
+ switchport mode access
+ switchport access vlan 113
+ 
+
+interface FastEthernet 1/16
+ description APB0002 - Second floor B access point
+ switchport mode access
+ switchport access vlan 114
+ 
+
+interface GigabitEthernet1/1
+ switchport mode trunk
+
+interface GigabitEthernet1/2
+ switchport mode trunk
+
+! Syslog
+
+logging buffer 10000
+logging buffer notifications
+logging host 192.168.100.100
+
+! Management SVI
+
+interface vlan 
+ip address 192.168.1.2 255.255.255.0
+no shut
+exit
+
+! Routing
+
+ip default-gateway 192.168.1.100
+
+! Archive
+
+archive
+path tftp://192.168.100.200/$h-$t
+time-period 1440
